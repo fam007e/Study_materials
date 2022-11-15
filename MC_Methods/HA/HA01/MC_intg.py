@@ -1,14 +1,41 @@
 import math
 import random
-import time
+from sympy import *
+import sympy
+
 
 def main():
-    random.seed(time.ctime(None))
-    #srand(time(None)) #Problem**
-    return MC_ID(-math.pi, math.pi, -0.3, 0.9, 10000)
+    expression = sympy.Symbol(input("Write the equation.. "))
+    func(expression)
+    a = float(input("Value of a:"))
+    b = float(input("Value of b:"))
+    c = float(input("Value of c:"))
+    d = float(input("Value of d:"))
+    N = int(input("Value of N:"))
+    MC_ID_Value = MC_ID(a, b, c, d, N)
+    print(f"Integrataion value: {MC_ID_Value}")
 
-def func(x):
-    return (1+math.cos(x))*math.sin(abs(2 *x))/abs(1+math.sin(2 *x)) #I want to make it (the "func(x)") so that I can input multiple equation to find its integration value or I just make the MC_ID a module to use it on another file?
+
+def func(expression):
+    return expression
+
+
+def RAND_MAX(size):
+    """ Generates pseudo-numbers range and returns the max value
+    Parameters
+    ----------
+    size : The length of random number list
+    
+    Returns
+    -------
+    Max of generated numbers
+    """
+    rands=[random.random() for i in range(size)]
+    m=max(rands)
+    
+    return m
+    
+RAND_MAX=RAND_MAX(10000)
 
 def MC_ID(a, b, c, d, N):
     i = None
@@ -17,10 +44,13 @@ def MC_ID(a, b, c, d, N):
     area = None
     count = 0
     for i in range(0, N + 1):
-        x = a+(b-a)*(random.random()/float(RAND_MAX))  #Problem***
-        y = c+(d-c)*(random.random()/float(RAND_MAX))  #Problem***
+        x = a+(b-a)*(random.random()/float(RAND_MAX)) 
+        y = c+(d-c)*(random.random()/float(RAND_MAX))
         if y<=func(x):
             count += 1
             area = (b-a)*(d-c)*(float(count)/float(N))
-        return area
+    return area
 
+
+if __name__ == "__main__":
+    main()
