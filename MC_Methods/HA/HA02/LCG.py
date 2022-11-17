@@ -7,3 +7,4 @@ def lcg():
     global rand
     rand = (a*rand + c) % m
     return rand / m
+
