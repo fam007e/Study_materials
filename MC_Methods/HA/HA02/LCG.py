@@ -4,7 +4,7 @@ import numpy as np
 def lcg(x, a, c, mod):
     while True:
         x = (a * x + c) % mod
-        yield x
+        yield x / mod
 
 def random_uniform_sample(n, interval, seed):
     a, c, mod = 16807, 0, 2 ** 31 - 1
@@ -33,7 +33,7 @@ def line_pdf(x, x1, y1, x2, y2):
 def inv_line_cdf(x, x1, y1, x2, y2):
     m = (y1 - y2) / (x1 - x2)
     c = y1 - x1 * (y1 - y2) / (x1 - x2)
-    return -c / m + (np.sqrt(c**2 + 2 * m * x))/m
+    return ((-c / m) + (np.sqrt(c**2 + 2 * m * x))/m)
 
 
 def triangle_approach(seed):
