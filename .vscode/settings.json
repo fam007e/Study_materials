@@ -1,6 +1,3 @@
 {
-    "editor.acceptSuggestionOnEnter": "on",
-    "svn.ignoreMissingSvnWarning": true,
-    "TortoiseSVN.tortoiseSVNProcExePath": "C:\\\\Program Files\\\\TortoiseSVN\\\\bin",
-    "svn.experimental.detect_encoding": true
+    "svn.ignoreMissingSvnWarning": true
 }
