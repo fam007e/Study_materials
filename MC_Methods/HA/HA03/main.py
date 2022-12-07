@@ -95,10 +95,11 @@ def triangle_approach(n, rng_seed=987654328):
 def run(n):
     E_MeV, mean_E, var_E, sd_E = triangle_approach(n)
     
-    sigma_t_vs_E = pd.read_csv('ENDF8_NT_InEnvsCRsec.csv', sep=';')       # reading the csv file from Janis
+    sigma_t_vs_E = pd.read_csv('C://Users//faisa//OneDrive//Documents//RLT//Study_Materialz//MC_Methods//HA//HA03//ENDF8_NT_InEnvsCRsec.csv')       # reading the csv file from Janis
     
     sigma_t_vs_E = sigma_t_vs_E.to_numpy()      # transforming the pandas dataframe into a numpy array
-    
+
+
     sigma_t_vs_E[:, 0] = sigma_t_vs_E[:, 0] * 1e-6      # turning E in eV from Janis into E in MeV for our use case
     sigma_t_vs_E[:, 1] = sigma_t_vs_E[:, 1] * 1e-24     # turning sigma in barns from Janis into sigma in cm^2 for our use case
     
@@ -117,8 +118,7 @@ def run(n):
     var_mean_s = var_s / len(s)
     sd_mean_s = np.sqrt(var_mean_s)
     
-    print(mean_s, sd_mean_s)
-    
+    print(f"Mean distance traversed by neutrons till first collision(in cm): {mean_s}\nStandard deviation of mean distance traversed by neutrons till first collision(in cm): {sd_mean_s}")
 
 
-run(10000)
+run(100000)
