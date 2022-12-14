@@ -1,0 +1,7 @@
+sim. fuel cycles
+
+Assemblies depleted--nuclide composition changed over a no. of timesteps--excess of reactivity changed at each timesteps
+
+Power dist, excess of reactivity change over a fuel cycle 
+
+estimate ---how long the fuel cycle may last--how long excess of reactivity run the reactor 
