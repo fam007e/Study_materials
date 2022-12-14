@@ -5,6 +5,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from pynverse import inversefunc
 
+np.random.seed(987654321)
+
 def display_distribution_of_RN(x, n=10):
     intervals = np.linspace(np.amin(x), np.amax(x), n + 1)
     points_in_intervals = np.zeros(n)
@@ -52,8 +54,7 @@ def inv_line_cdf(x, x1, y1, x2, y2):
     return F_inv_x
 
 # Acceptance rejection method using triangle approach
-def triangle_approach(n, rng_seed=987654328):
-    # np.random.seed(rng_seed)
+def triangle_approach(n=1):
     
     uniform_rn = np.random.uniform(0, 1, 10 * n)
     
@@ -81,44 +82,80 @@ def triangle_approach(n, rng_seed=987654328):
         
         if count >= n:
             break
+    
+    # mean_rn = np.average(prob_scaled_rn_2)
+    # var_rn = np.var(prob_scaled_rn_2)
+    # sd_rn = np.std(prob_scaled_rn_2)
+    
+    E = prob_scaled_rn_2[0]
+    
+    return E
 
-    # prob_scaled_rn_2 = np.array(prob_scaled_rn_2_list)
+sigma_t_vs_E = pd.read_csv('C://Users//faisa//OneDrive//Documents//RLT//Git_clone_repo//Study_materials-1//MC_Methods//HA//HA04//ENDF8_NT_InEnvsCRsec.csv')       # reading the csv file from Janis
+sigma_t_vs_E = sigma_t_vs_E.to_numpy()      # transforming the pandas dataframe into a numpy array    
+sigma_t_vs_E[:, 0] = sigma_t_vs_E[:, 0] * 1e-6      # turning E in eV from Janis into E in MeV for our use case
+sigma_t_vs_E[:, 1] = sigma_t_vs_E[:, 1] * 1e-24     # turning sigma in barns from Janis into sigma in cm^2 for our use case
     
-    mean_rn = np.average(prob_scaled_rn_2)
-    var_rn = np.var(prob_scaled_rn_2)
-    sd_rn = np.std(prob_scaled_rn_2)
+def calculate_s(N, E, u, sigma_t_v_E):
+    sigma_intp = np.interp(E, sigma_t_v_E[:, 0], sigma_t_v_E[:, 1])       # interpolating the sigma values for our E values
+    SIGMA_intp = sigma_intp * N     # SIGMA = N * sigma
+    s = (- 1 / SIGMA_intp) * np.log(u)     # approximating distance to first collision
     
-    return prob_scaled_rn_2, mean_rn, var_rn, sd_rn
-
-
-# PART 1
-def run(n):
-    E_MeV, mean_E, var_E, sd_E = triangle_approach(n)
-    
-    sigma_t_vs_E = pd.read_csv('C://Users//faisa//OneDrive//Documents//RLT//Git_clone_repo//Study_materials-1//MC_Methods//HA//HA04//ENDF8_NT_InEnvsCRsec.csv')       # reading the csv file from Janis
-    
-    sigma_t_vs_E = sigma_t_vs_E.to_numpy()      # transforming the pandas dataframe into a numpy array
-    
-    sigma_t_vs_E[:, 0] = sigma_t_vs_E[:, 0] * 1e-6      # turning E in eV from Janis into E in MeV for our use case
-    sigma_t_vs_E[:, 1] = sigma_t_vs_E[:, 1] * 1e-24     # turning sigma in barns from Janis into sigma in cm^2 for our use case
-    
-    sigma_intp = np.interp(E_MeV, sigma_t_vs_E[:, 0], sigma_t_vs_E[:, 1])       # interpolating the sigma values for our E values
-    
-    SIGMA_intp = sigma_intp * 7.98e21 # SIGMA = N * sigma. N = 9.79e21, but QUESTION!
-    
-    s = np.zeros(len(SIGMA_intp))
-    
-    for i in range(0, len(SIGMA_intp)):
-        s[i] = (- 1 / SIGMA_intp[i]) * np.log(np.random.rand())     # approximating distance to first collision
-    
-    mean_s = np.average(s)
-    var_s = np.var(s)
-    
-    var_mean_s = var_s / len(s)
-    sd_mean_s = np.sqrt(var_mean_s)
-    
-    print(mean_s, sd_mean_s)
+    return s
     
 
+def run_2_SSS(sigma_t_v_E, n):
+    N1 = 7.98e21
+    N2 = N1 * 1.0001
+    s = np.zeros((3, n))
+    rel_delta_s = np.zeros(n)
+    
+    for i in range(0, n):
+        E1 = triangle_approach()
+        u1 = np.random.rand()
+        s1 = calculate_s(N1, E1, u1, sigma_t_v_E)
+        s[0, i] = s1
+        
+        E2 = triangle_approach()
+        u2 = np.random.rand()
+        s2 = calculate_s(N2, E2, u2, sigma_t_v_E)
+        s[1, i] = s2
+        
+        s[2, i] = s1 * s2
+        
+        rel_delta_s[i] = abs((s1 - s2) / s1)
+    
+    print("simple")
+    print(np.mean(s[2, :]) - np.mean(s[0, :]) * np.mean(s[1, :]))
+    print(np.mean(rel_delta_s), np.std(rel_delta_s))
+    print(np.cov(s[0, :], s[1, :]))
+    
+def correlated_ss(sigma_t_v_E, n):
+    N1 = 7.98e21
+    N2 = N1 * 1.0001
+    s = np.zeros((3, n))
+    rel_delta_s = np.zeros(n)
+    
+    for i in range(0, n):
+        E = triangle_approach() # , mean_E, var_E, sd_E
+        u = np.random.rand()
+        
+        s1 = calculate_s(N1, E, u, sigma_t_v_E)
+        s[0, i] = s1
 
-run(10000)
+        s2 = calculate_s(N2, E, u, sigma_t_v_E)
+        s[1, i] = s2
+        
+        s[2, i] = s1 * s2
+        
+        rel_delta_s[i] = abs((s1 - s2) / s1)
+    
+    print("correlated")
+    print(np.mean(s[2, :]) - np.mean(s[0, :]) * np.mean(s[1, :]))
+    print(np.mean(rel_delta_s), np.std(rel_delta_s))
+    print(np.cov(s[0, :], s[1, :]))
+    
+
+
+run_2_SSS(sigma_t_vs_E, int(1e7))    
+correlated_ss(sigma_t_vs_E, int(1e7))
