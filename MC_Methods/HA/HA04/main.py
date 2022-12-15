@@ -132,9 +132,9 @@ def correlated_ss(sigma_t_v_E, n):
 start_sss = process_time()
 run_2_SSS(sigma_t_vs_E, int(1e7)) 
 end_sss = process_time()
-print(f"SSS time:{end_sss - start_sss}")
+print(f"Simple sampling time:{end_sss - start_sss}")
 
 start_css = process_time()   
 correlated_ss(sigma_t_vs_E, int(1e7))
 end_css = process_time()
-print(f"CSS time:{end_css - start_css}")
+print(f"Correlated sampling time:{end_css - start_css}")
