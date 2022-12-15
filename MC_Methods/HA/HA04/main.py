@@ -2,7 +2,7 @@ import numpy as np
 import random
 import scipy.interpolate as interpolate
 import pandas as pd
-
+import time
 
 # Random number with defined seed of 987654321
 np.random.seed(987654321)
@@ -96,9 +96,9 @@ def run_2_SSS(sigma_t_v_E, n):
         
         rel_delta_s[i] = abs((s1 - s2) / s1)
     
-    print("simple")
-    print(np.mean(s[2, :]) - np.mean(s[0, :]) * np.mean(s[1, :]))
-    print(np.mean(rel_delta_s), np.std(rel_delta_s))
+    print("For simple sampling:")
+    print(f"Covariance:{np.mean(s[2, :]) - np.mean(s[0, :]) * np.mean(s[1, :])}")
+    print(f"Mean relative distance:{np.mean(rel_delta_s)}\nStandard deviation of relative distance:{np.std(rel_delta_s)}")
 #   print(np.cov(s[0, :], s[1, :]))
 
 # Correlated sampling of values for values of s for N and 1.0001N, and the relative change of values of s due to it.
@@ -122,12 +122,19 @@ def correlated_ss(sigma_t_v_E, n):
         
         rel_delta_s[i] = abs((s1 - s2) / s1)
     
-    print("correlated")
-    print(np.mean(s[2, :]) - np.mean(s[0, :]) * np.mean(s[1, :]))
-    print(np.mean(rel_delta_s), np.std(rel_delta_s))
+    print("For correlated sampling:")
+    print(f"Covariance:{np.mean(s[2, :]) - np.mean(s[0, :]) * np.mean(s[1, :])}")
+    print(f"Mean relative distance:{np.mean(rel_delta_s)}\nStandard deviation of relative distance:{ np.std(rel_delta_s)}")
 #    print(np.cov(s[0, :], s[1, :]))
     
 
 # Sampling the values 10000000 times
-run_2_SSS(sigma_t_vs_E, int(1e7))    
+start_sss = time.process_time
+run_2_SSS(sigma_t_vs_E, int(1e7)) 
+end_sss = time.process_time
+print(f"SSS time:{abs(start_sss - end_sss) }")
+
+start_css = time.process_time   
 correlated_ss(sigma_t_vs_E, int(1e7))
+end_css = time.process_time
+print(f"CSS time:{abs(start_css - end_css) }")
