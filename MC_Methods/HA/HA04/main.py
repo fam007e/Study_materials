@@ -2,29 +2,12 @@ import numpy as np
 import random
 import scipy.interpolate as interpolate
 import pandas as pd
-import matplotlib.pyplot as plt
-from pynverse import inversefunc
+from time import process_time
 
+# Random number with defined seed of 987654321
 np.random.seed(987654321)
 
-def display_distribution_of_RN(x, n=10):
-    intervals = np.linspace(np.amin(x), np.amax(x), n + 1)
-    points_in_intervals = np.zeros(n)
-    
-    points_in_intervals, intervals = np.histogram(x, bins=intervals)
-
-    plt.plot(intervals[0:(n - 1)], points_in_intervals[0:(n - 1)], 'r')
-    plt.xlabel('intervals')
-    plt.ylabel('number of values in interval')
-    plt.ylim(bottom=np.amin(points_in_intervals) - 0.2 * np.amin(points_in_intervals))
-    plt.ylim(top=np.amax(points_in_intervals) + 0.2 * np.amax(points_in_intervals))
-    plt.show()
-    
-# def inverse_transform_sampling(cdf, lower, upper, uni_rn):
-#     inv_cdf = inversefunc(cdf, domain=[lower, upper])
-#     return inv_cdf(uni_rn)
-
-# the pdf
+# The pdf for energy distribution
 def pdf(x):
     a = 0.5535
     b = 1.0347
@@ -32,21 +15,21 @@ def pdf(x):
     
     return a * np.exp(-x / b) * np.sinh(np.sqrt(c * x))
 
-# the line pdf
+# The line pdf for energy distribution
 def line_pdf(x, x1, y1, x2, y2):
     m = (y1 - y2) / (x1 - x2)
     c = y1 - x1 * (y1 - y2) / (x1 - x2)
     h_x =  m * x + c
     return h_x
 
-# the line cdf
+# The line cdf for energy distribution
 def line_cdf(x, x1, y1, x2, y2):
     m = (y1 - y2) / (x1 - x2)
     c = y1 - x1 * (y1 - y2) / (x1 - x2)
     F_x =  m * x**2 / 2 + c * x
     return F_x
 
-# inverse of the line cdf
+# Inverse of the line cdf for energy distribution
 def inv_line_cdf(x, x1, y1, x2, y2):
     m = (y1 - y2) / (x1 - x2)
     c = y1 - x1 * (y1 - y2) / (x1 - x2)
@@ -57,18 +40,11 @@ def inv_line_cdf(x, x1, y1, x2, y2):
 def triangle_approach(n=1):
     
     uniform_rn = np.random.uniform(0, 1, 10 * n)
-    
-    # aur.display_distribution_of_RN(uniform_rn, 10)
 
     prob_scaled_rn_1 = inv_line_cdf(uniform_rn, 0, 0.1, 20, 0)
-    
-    # print(np.amax(prob_scaled_rn_1))
-
-    # display_distribution_of_RN(prob_scaled_rn_1, 10)
 
     prob_scaled_rn_2 = np.zeros(n)
     count = 0
-    # prob_scaled_rn_2_list = []
     for i in range(0, len(prob_scaled_rn_1)):
         c = 4
         h = line_pdf(prob_scaled_rn_1[i], 0, 0.1, 20, 0)
@@ -78,32 +54,27 @@ def triangle_approach(n=1):
         if u * c * h <= f:
             prob_scaled_rn_2[count] = prob_scaled_rn_1[i]
             count += 1
-            # prob_scaled_rn_2_list.append(prob_scaled_rn_1[i])
         
         if count >= n:
             break
-    
-    # mean_rn = np.average(prob_scaled_rn_2)
-    # var_rn = np.var(prob_scaled_rn_2)
-    # sd_rn = np.std(prob_scaled_rn_2)
-    
+        
     E = prob_scaled_rn_2[0]
     
     return E
 
-sigma_t_vs_E = pd.read_csv('C://Users//faisa//OneDrive//Documents//RLT//Git_clone_repo//Study_materials-1//MC_Methods//HA//HA04//ENDF8_NT_InEnvsCRsec.csv')       # reading the csv file from Janis
-sigma_t_vs_E = sigma_t_vs_E.to_numpy()      # transforming the pandas dataframe into a numpy array    
-sigma_t_vs_E[:, 0] = sigma_t_vs_E[:, 0] * 1e-6      # turning E in eV from Janis into E in MeV for our use case
-sigma_t_vs_E[:, 1] = sigma_t_vs_E[:, 1] * 1e-24     # turning sigma in barns from Janis into sigma in cm^2 for our use case
+sigma_t_vs_E = pd.read_csv('C://Users//faisa//OneDrive//Documents//RLT//Git_clone_repo//Study_materials-1//MC_Methods//HA//HA04//ENDF8_NT_InEnvsCRsec.csv')       # Reading the csv file from Janis
+sigma_t_vs_E = sigma_t_vs_E.to_numpy()      # Transforming the pandas dataframe into a numpy array    
+sigma_t_vs_E[:, 0] = sigma_t_vs_E[:, 0] * 1e-6      # Turning E in eV from Janis into E in MeV for our use case
+sigma_t_vs_E[:, 1] = sigma_t_vs_E[:, 1] * 1e-24     # Turning sigma in barns from Janis into sigma in cm^2 for our use case
     
 def calculate_s(N, E, u, sigma_t_v_E):
-    sigma_intp = np.interp(E, sigma_t_v_E[:, 0], sigma_t_v_E[:, 1])       # interpolating the sigma values for our E values
+    sigma_intp = np.interp(E, sigma_t_v_E[:, 0], sigma_t_v_E[:, 1])       # Interpolating the sigma values for our E values
     SIGMA_intp = sigma_intp * N     # SIGMA = N * sigma
-    s = (- 1 / SIGMA_intp) * np.log(u)     # approximating distance to first collision
+    s = (- 1 / SIGMA_intp) * np.log(u)     # Approximating distance to first collision
     
     return s
     
-
+# Simple sampling for values of s for N and 1.0001N, and the relative change of values of s due to it.
 def run_2_SSS(sigma_t_v_E, n):
     N1 = 7.98e21
     N2 = N1 * 1.0001
@@ -125,11 +96,12 @@ def run_2_SSS(sigma_t_v_E, n):
         
         rel_delta_s[i] = abs((s1 - s2) / s1)
     
-    print("simple")
-    print(np.mean(s[2, :]) - np.mean(s[0, :]) * np.mean(s[1, :]))
-    print(np.mean(rel_delta_s), np.std(rel_delta_s))
-    print(np.cov(s[0, :], s[1, :]))
-    
+    print("For simple sampling:")
+    print(f"Covariance:{np.mean(s[2, :]) - np.mean(s[0, :]) * np.mean(s[1, :])}")
+    print(f"Mean relative distance:{np.mean(rel_delta_s)}\nStandard deviation of relative distance:{np.std(rel_delta_s)}")
+#   print(np.cov(s[0, :], s[1, :]))
+
+# Correlated sampling of values for values of s for N and 1.0001N, and the relative change of values of s due to it.
 def correlated_ss(sigma_t_v_E, n):
     N1 = 7.98e21
     N2 = N1 * 1.0001
@@ -137,7 +109,7 @@ def correlated_ss(sigma_t_v_E, n):
     rel_delta_s = np.zeros(n)
     
     for i in range(0, n):
-        E = triangle_approach() # , mean_E, var_E, sd_E
+        E = triangle_approach()
         u = np.random.rand()
         
         s1 = calculate_s(N1, E, u, sigma_t_v_E)
@@ -150,12 +122,19 @@ def correlated_ss(sigma_t_v_E, n):
         
         rel_delta_s[i] = abs((s1 - s2) / s1)
     
-    print("correlated")
-    print(np.mean(s[2, :]) - np.mean(s[0, :]) * np.mean(s[1, :]))
-    print(np.mean(rel_delta_s), np.std(rel_delta_s))
-    print(np.cov(s[0, :], s[1, :]))
+    print("For correlated sampling:")
+    print(f"Covariance:{np.mean(s[2, :]) - np.mean(s[0, :]) * np.mean(s[1, :])}")
+    print(f"Mean relative distance:{np.mean(rel_delta_s)}\nStandard deviation of relative distance:{ np.std(rel_delta_s)}")
+#    print(np.cov(s[0, :], s[1, :]))
     
 
+# Sampling the values 10000000 times
+start_sss = process_time()
+run_2_SSS(sigma_t_vs_E, int(1e7)) 
+end_sss = process_time()
+print(f"Simple sampling time:{end_sss - start_sss}")
 
-run_2_SSS(sigma_t_vs_E, int(1e7))    
+start_css = process_time()   
 correlated_ss(sigma_t_vs_E, int(1e7))
+end_css = process_time()
+print(f"Correlated sampling time:{end_css - start_css}")

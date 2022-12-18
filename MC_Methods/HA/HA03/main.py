@@ -95,7 +95,7 @@ def triangle_approach(n, rng_seed=987654328):
 def run(n):
     E_MeV, mean_E, var_E, sd_E = triangle_approach(n)
     
-    sigma_t_vs_E = pd.read_csv('ENDF8_NT_InEnvsCRsec.csv', sep=';')       # reading the csv file from Janis
+    sigma_t_vs_E = pd.read_csv('C://Users//faisa//OneDrive//Documents//RLT//Study_Materialz//MC_Methods//HA//HA03//ENDF8_NT_InEnvsCRsec.csv')       # reading the csv file from Janis
     
     sigma_t_vs_E = sigma_t_vs_E.to_numpy()      # transforming the pandas dataframe into a numpy array
     
@@ -118,7 +118,5 @@ def run(n):
     sd_mean_s = np.sqrt(var_mean_s)
     
     print(mean_s, sd_mean_s)
-    
-
 
 run(10000)
